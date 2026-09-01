@@ -123,7 +123,63 @@ exports.getMe = async (req, res, next) => {
   }
 };
 
-// Helper function to generate JWT
+// @desc    Update user profile
+// @route   PUT /api/auth/profile
+// @access  Private
+exports.updateProfile = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+      user.name = req.body.name || user.name;
+      user.email = req.body.email || user.email;
+      user.mobile = req.body.mobile || user.mobile;
+
+      const updatedUser = await user.save();
+
+      res.status(200).json({
+        success: true,
+        data: {
+          _id: updatedUser._id,
+          name: updatedUser.name,
+          email: updatedUser.email,
+          mobile: updatedUser.mobile,
+          role: updatedUser.role
+        }
+      });
+    } else {
+      res.status(404);
+      throw new Error('User not found');
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Update password
+// @route   PUT /api/auth/updatepassword
+// @access  Private
+exports.updatePassword = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id).select('+password');
+
+    // Check current password
+    if (!(await user.matchPassword(req.body.currentPassword))) {
+      res.status(401);
+      throw new Error('Incorrect current password');
+    }
+
+    user.password = req.body.newPassword;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Password updated successfully'
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'your_jwt_secret_key_here', {
     expiresIn: '30d'
