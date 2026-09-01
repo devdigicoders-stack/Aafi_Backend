@@ -115,6 +115,7 @@ exports.getMe = async (req, res, next) => {
         email: req.user.email,
         mobile: req.user.mobile,
         role: req.user.role,
+        profileImage: req.user.profileImage,
         createdAt: req.user.createdAt
       }
     });
@@ -134,6 +135,9 @@ exports.updateProfile = async (req, res, next) => {
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
       user.mobile = req.body.mobile || user.mobile;
+      if (req.body.profileImage !== undefined) {
+        user.profileImage = req.body.profileImage;
+      }
 
       const updatedUser = await user.save();
 
@@ -144,7 +148,8 @@ exports.updateProfile = async (req, res, next) => {
           name: updatedUser.name,
           email: updatedUser.email,
           mobile: updatedUser.mobile,
-          role: updatedUser.role
+          role: updatedUser.role,
+          profileImage: updatedUser.profileImage
         }
       });
     } else {
