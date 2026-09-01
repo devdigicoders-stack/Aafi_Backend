@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { 
+  getMyProducts,
   getProducts, 
   getProductsByCategory, 
   getAdminProducts,
@@ -16,6 +17,9 @@ router.get('/category/:categoryId', getProductsByCategory);
 
 // Admin-specific route for ALL products
 router.get('/admin/all', protect, authorize('admin'), getAdminProducts);
+
+// Get my products
+router.get('/my-products', protect, getMyProducts);
 
 // Protected routes (Normal Users can POST, Admin can PUT/DELETE)
 router.route('/')

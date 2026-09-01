@@ -1,6 +1,24 @@
 const Product = require('../models/productModel');
 const Category = require('../models/categoryModel');
 
+// @desc    Get logged in user's products
+// @route   GET /api/products/my-products
+// @access  Private
+exports.getMyProducts = async (req, res, next) => {
+  try {
+    const products = await Product.find({ user: req.user._id })
+      .populate('category', 'name')
+      .sort('-createdAt');
+    res.status(200).json({
+      success: true,
+      count: products.length,
+      data: products
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // @desc    Get all active AND approved products
 // @route   GET /api/products
 // @access  Public
