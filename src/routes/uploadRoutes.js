@@ -3,7 +3,15 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const cloudinary = require('cloudinary').v2;
 const { protect, authorize } = require('../middlewares/authMiddleware');
+
+// Configure Cloudinary using Environment Variables
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 // Ensure uploads directory exists in the backend root
 const uploadDir = path.join(__dirname, '../../uploads');
@@ -39,21 +47,38 @@ const upload = multer({
   }
 });
 
-// @desc    Upload an image
+// @desc    Upload an image (Local + Cloudinary)
 // @route   POST /api/upload
 // @access  Private
-router.post('/', protect, upload.single('image'), (req, res) => {
+router.post('/', protect, upload.single('image'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'Please upload a file' });
   }
   
-  // Return the path that will be served statically by express
-  const publicUrl = `/uploads/${req.file.filename}`;
+  let cloudinaryUrl = null;
+  
+  try {
+    // If Cloudinary keys are provided, upload it to Cloudinary
+    if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'products'
+      });
+      cloudinaryUrl = result.secure_url;
+      console.log('Image successfully uploaded to Cloudinary');
+    }
+  } catch (err) {
+    console.error('Cloudinary Upload Error:', err);
+    // If cloudinary fails, it will safely fallback to local url below
+  }
+
+  // Return Cloudinary URL if successful, otherwise fallback to local URL
+  const publicUrl = cloudinaryUrl || `/uploads/${req.file.filename}`;
   
   res.status(200).json({
     success: true,
     message: 'Image uploaded successfully',
-    url: publicUrl
+    url: publicUrl,
+    uploadedToCloudinary: !!cloudinaryUrl
   });
 });
 
