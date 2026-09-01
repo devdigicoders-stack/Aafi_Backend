@@ -18,6 +18,14 @@ const ProductSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add a description for the product']
   },
+  callNumber: {
+    type: String,
+    required: [false, 'Please add a call number']
+  },
+  whatsappNumber: {
+    type: String,
+    required: [false, 'Please add a whatsapp number']
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

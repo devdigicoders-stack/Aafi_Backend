@@ -73,7 +73,7 @@ exports.getAdminProducts = async (req, res, next) => {
 // @access  Private
 exports.createProduct = async (req, res, next) => {
   try {
-    const { name, category, imageUrl, description, isActive, status } = req.body;
+    const { name, category, imageUrl, description, callNumber, whatsappNumber, isActive, status } = req.body;
 
     if (!name || !category || !imageUrl || !description) {
       res.status(400);
@@ -92,6 +92,8 @@ exports.createProduct = async (req, res, next) => {
       category,
       imageUrl,
       description,
+      callNumber,
+      whatsappNumber,
       user: req.user._id,
       isActive: isActive !== undefined ? isActive : true
     };
@@ -118,7 +120,7 @@ exports.createProduct = async (req, res, next) => {
 // @access  Private/Admin
 exports.updateProduct = async (req, res, next) => {
   try {
-    const { name, category, imageUrl, description, isActive, status } = req.body;
+    const { name, category, imageUrl, description, callNumber, whatsappNumber, isActive, status } = req.body;
 
     let product = await Product.findById(req.params.id);
 
@@ -139,6 +141,8 @@ exports.updateProduct = async (req, res, next) => {
     if (name !== undefined) product.name = name;
     if (imageUrl !== undefined) product.imageUrl = imageUrl;
     if (description !== undefined) product.description = description;
+    if (callNumber !== undefined) product.callNumber = callNumber;
+    if (whatsappNumber !== undefined) product.whatsappNumber = whatsappNumber;
     if (isActive !== undefined) product.isActive = isActive;
     
     if (status !== undefined) {
