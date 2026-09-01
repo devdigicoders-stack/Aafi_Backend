@@ -41,8 +41,8 @@ const upload = multer({
 
 // @desc    Upload an image
 // @route   POST /api/upload
-// @access  Private/Admin
-router.post('/', protect, authorize('admin'), upload.single('image'), (req, res) => {
+// @access  Private
+router.post('/', protect, upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'Please upload a file' });
   }
