@@ -24,7 +24,11 @@ exports.getMyProducts = async (req, res, next) => {
 // @access  Public
 exports.getProducts = async (req, res, next) => {
   try {
-    const products = await Product.find({ isActive: true, status: 'approved' })
+    const query = { isActive: true, status: 'approved' };
+    if (req.query.featured === 'true') {
+      query.isFeatured = true;
+    }
+    const products = await Product.find(query)
       .populate('category', 'name')
       .populate('user', 'name')
       .sort('-createdAt');
@@ -91,7 +95,7 @@ exports.getAdminProducts = async (req, res, next) => {
 // @access  Private
 exports.createProduct = async (req, res, next) => {
   try {
-    const { name, category, imageUrl, description, callNumber, whatsappNumber, isActive, status } = req.body;
+    const { name, category, imageUrl, description, callNumber, whatsappNumber, isActive, status, isFeatured } = req.body;
 
     if (!name || !category || !imageUrl || !description) {
       res.status(400);
@@ -113,7 +117,8 @@ exports.createProduct = async (req, res, next) => {
       callNumber,
       whatsappNumber,
       user: req.user._id,
-      isActive: isActive !== undefined ? isActive : true
+      isActive: isActive !== undefined ? isActive : true,
+      isFeatured: isFeatured !== undefined ? isFeatured : false
     };
     
     // Allow admin to set status on creation (e.g. directly to 'approved')
@@ -138,7 +143,7 @@ exports.createProduct = async (req, res, next) => {
 // @access  Private/Admin
 exports.updateProduct = async (req, res, next) => {
   try {
-    const { name, category, imageUrl, description, callNumber, whatsappNumber, isActive, status } = req.body;
+    const { name, category, imageUrl, description, callNumber, whatsappNumber, isActive, status, isFeatured } = req.body;
 
     let product = await Product.findById(req.params.id);
 
@@ -162,6 +167,7 @@ exports.updateProduct = async (req, res, next) => {
     if (callNumber !== undefined) product.callNumber = callNumber;
     if (whatsappNumber !== undefined) product.whatsappNumber = whatsappNumber;
     if (isActive !== undefined) product.isActive = isActive;
+    if (isFeatured !== undefined) product.isFeatured = isFeatured;
     
     if (status !== undefined) {
       if (!['pending', 'approved', 'rejected'].includes(status)) {
